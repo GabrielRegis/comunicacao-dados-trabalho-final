@@ -2,16 +2,16 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// Sanity check route
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html');
+    res.sendStatus(200);
 });
-io.on('connection', (socket) => {
 
+io.on('connection', (socket) => {
     socket.on('entrouNaSala', (data) => {
         console.log(data)
         io.emit('usuarioConectado', data)
     })
-
     socket.on('enviarMensagem', (data) => {
         console.log(data)
         io.emit('mensagemChegou', data);
