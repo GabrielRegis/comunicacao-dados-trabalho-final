@@ -9,39 +9,63 @@ export default {
   sockets: {
     connect: function() {},
     mensagemChegou: function(data) {
-      // Verifica se a mensagem que chegou é minha, caso contrário, atualiza gráfico de última mensagem recebida
+      // Ignora mensagens próprias
       if (data.userId !== this.userId) {
-        this.ultimaMensagemRecebidaNRZ = data.mensagem;
+        // Melhor deixar os passos explícitos, caso o professor queira ver o código
+        var binStr = this.NRZParaBinario(data.signal)
+        var encryptedStr = this.binarioParaString(binStr)
+        var decryptedStr = this.decrypt(encryptedStr)
 
-        // Ao colocar o this.ultimaMensagemRecebida, a conversão é realizada automaricamente (TODO - Preencher os métodos no Computed)
-        this.mensagensChat.push(this.ultimaMensagemRecebida);
+        this.mensagensChat.push({
+          userId: data.userId,
+          conteudo: decryptedStr
+        });
+
+        // Atualiza as saídas relativas a "Ultima mensagem recebida"
+        // (ver métodos em computed)
+        this.ultimaMensagemRecebidaCodificada = data.signal;
       }
     }
   },
   methods: {
     sendMessage: function() {
-      this.ultimaMensagemEnviada = this.mensagem;
-      const novaMensagem = {
+      // Melhor deixar os passos explícitos, caso o professor queira ver o código
+      var encryptedStr = this.encrypt(this.mensagemParaEnviar)
+      var binStr = this.stringParaBinario(encryptedStr)
+      var nrzSignal = this.binarioParaNRZ(binStr)
+
+      this.$socket.emit("enviarMensagem", {
         userId: this.userId,
-        mensagem: this.ultimaMensagemEnviadaNRZ
-      };
-      this.$socket.emit("enviarMensagem", novaMensagem);
+        signal: nrzSignal
+      });
 
-      // Adiciona a mensagem localmente
-      const novaMensagemLocal = {
+      this.mensagensChat.push({
         userId: this.userId,
-        mensagem: this.mensagem
-      };
+        conteudo: this.mensagemParaEnviar,
+      });
+      this.mensagemParaEnviar = null;
 
-      this.mensagensChat.push(novaMensagemLocal);
-
-      this.mensagem = null;
+      // Atualiza as saídas relativas a "Ultima mensagem enviada"
+      // (ver métodos em computed)
+      this.ultimaMensagemEnviada = this.mensagemParaEnviar;
     },
-    mensagemParaStringNumeros(msg) {
-      if (msg === null) {
+
+    encrypt(str) {
+      return str
+    },
+    decrypt(encryptedStr) {
+      return encryptedStr
+    },
+
+    stringParaBinario(str) {
+      if (str === null) {
         return null;
       }
-      return msg
+
+      // TODO - Verificar se estão convertendo para binário corretamente
+
+      //porque toda essa lógica pra converter? não tem um jeito mais fácil?
+      var stringNumeros = str
         .split("")
         .map(function(char) {
           if (/^\d+$/.test(char)) {
@@ -53,74 +77,93 @@ export default {
           return previous.toString() + current.toString();
         })
         .toString();
-    },
 
-    // TODO - Verificar se estão convertendo para binário corretamente
-    stringParaBinario(str) {
       function zeroPad(num) {
         return "00000000".slice(String(num).length) + num;
       }
 
-      return str.replace(/[\s\S]/g, function(str) {
-        str = zeroPad(str.charCodeAt().toString(2));
-        return !1 == str ? str : str;
+      return stringNumeros.replace(/[\s\S]/g, function(str) {
+        return zeroPad(str.charCodeAt().toString(2));
       });
     },
-    mensagemBinaria: function(mensagem) {
-      return mensagem
-        ? this.stringParaBinario(this.mensagemParaStringNumeros(mensagem))
-        : null;
+    binarioParaString(binStr) {
+      return binStr
     },
-    binarioParaNRZ(mensagemBinaria) {
-      if (mensagemBinaria === null) {
-        return;
+
+    binarioParaNRZ(binStr) {
+      if (binStr === null) {
+        return null
       }
-      const serieA = mensagemBinaria.split("").map(value => {
-        // TODO - Aplicar NRZ Aqui
-        // value será alterado para o valor correto, resultado do alg
+
+      // TODO: converter binStr para o sinal NRZ
+      // Ex: "010" --> (-1, 1, -1)
+      const nrzSignal = binStr.split("").map(value => {
         return value;
       });
+
+      return [{
+        data: nrzSignal
+      }];
+    },
+    NRZParaBinario(nrzSignal) {
+      if (nrzSignal === null) {
+        return null
+      }
+
+      // TODO: converter o sinal NRZ na string binária
+      // Ex: (-1, 1, -1) --> "010"
+
+      return "000000";
+    },
+
+    binarioParaRZ(binStr) {
+      if (binStr === null) {
+        return null
+      }
+
+      // TODO: converter binStr para o sinal RZ
+      // Ex: "010" --> (-1, 0, 1, 0, -1)
+      const rzSignal = binStr.split("").map(value => {
+        return value;
+      });
+
       return [
         {
-          data: serieA
+          data: rzSignal
         }
       ];
     },
-    // TODO
-    nRZParaBinario(mensagemNRZ) {
-      const mensagemNRZString = mensagemNRZ[0].data.reduce(function(
-        current,
-        previous
-      ) {
-        return previous.toString() + current.toString();
-      });
-      // Mudar isso, só coloquei = para compilar.
-      // Alterar mensagemNRZString para binário. Processo inverso ao NRZ
-      let resultado = mensagemNRZString;
-      return resultado;
+    RZParaBinario(rzSignal) {
+      if (rzSignal === null) {
+        return null
+      }
+
+      // TODO: converter o sinal RZ na string binária
+      // Ex: (-1, 0, 1, 0, -1) --> "010"
+
+      return "000000";
     },
-    // TODO
-    binarioParaMensagem(mensagemBinario) {
-      // Mudar isso, só coloquei = para compilar
-      let resultado = mensagemBinario;
-      return resultado;
-    }
   },
 
   computed: {
-    ultimaMensagemEnviadaBinaria() {
-      return this.mensagemBinaria(this.ultimaMensagemEnviada);
+    ultimaMensagemEnviadaCriptografada() {
+      return this.encrypt(this.ultimaMensagemEnviada);
     },
-    ultimaMensagemEnviadaNRZ() {
+    ultimaMensagemEnviadaBinaria() {
+      return this.stringParaBinario(this.ultimaMensagemEnviadaCriptografada);
+    },
+    ultimaMensagemEnviadaCodificada() {
       return this.binarioParaNRZ(this.ultimaMensagemEnviadaBinaria);
     },
 
-    // TODO
     ultimaMensagemRecebidaBinaria() {
-      return this.nRZParaBinario(this.ultimaMensagemRecebidaNRZ);
+      return this.NRZParaBinario(this.ultimaMensagemRecebidaCodificada);
+    },
+    ultimaMensagemRecebidaCriptografada() {
+      return this.binarioParaString(this.ultimaMensagemRecebidaBinaria);
     },
     ultimaMensagemRecebida() {
-      return this.binarioParaMensagem(this.ultimaMensagemRecebidaBinaria);
+      return this.decrypt(this.ultimaMensagemRecebidaCriptografada);
     }
   },
 
@@ -128,13 +171,14 @@ export default {
   data() {
     return {
       userId: uuid.v1(),
-      // Ultima mensagem que o usuário enviou
-      ultimaMensagemEnviada: null,
 
-      // Última mensagem que o usuário recebeu, que será uma mensagem codificada com o NRZ
-      ultimaMensagemRecebidaNRZ: null,
-      mensagem: null,
+      // Ultima mensagem que o usuário enviou (raw text) e que recebeu (codificado)
+      ultimaMensagemEnviada: null,
+      ultimaMensagemRecebidaCodificada: null,
+
+      mensagemParaEnviar: null,
       mensagensChat: [],
+
       chartOptions: {
         chart: {
           height: 200,
@@ -189,33 +233,48 @@ export default {
                   placeholder="Mensagem"
                 />
                 <v-text-field
+                  v-model="ultimaMensagemEnviadaCriptografada"
+                  class="title"
+                  label="Criptografada"
+                  readonly
+                  placeholder="Mensagem criptografada"
+                />
+                <v-text-field
                   v-model="ultimaMensagemEnviadaBinaria"
                   class="title"
                   label="Binário"
                   readonly
-                  placeholder="Mensagem binária"
+                  placeholder="Mensagem em binário"
                 />
                 <apexchart
                   type="line"
                   height="350"
                   :options="chartOptions"
-                  :series="ultimaMensagemEnviadaNRZ"
+                  :series="ultimaMensagemEnviadaCodificada"
                 />
               </v-form>
-              <v-form v-if="ultimaMensagemRecebidaNRZ">
+
+              <v-form v-if="ultimaMensagemRecebidaCodificada">
                 <h1 class="title">Última mensagem recebida</h1>
                 <apexchart
                   type="line"
                   height="350"
                   :options="chartOptions"
-                  :series="ultimaMensagemRecebidaNRZ"
+                  :series="ultimaMensagemRecebidaCodificada"
                 />
                 <v-text-field
                   v-model="ultimaMensagemRecebidaBinaria"
                   class="title"
                   label="Binário"
                   readonly
-                  placeholder="Mensagem binária"
+                  placeholder="Mensagem em binário"
+                />
+                <v-text-field
+                  v-model="ultimaMensagemRecebidaCriptografada"
+                  class="title"
+                  label="Criptografada"
+                  readonly
+                  placeholder="Mensagem criptografada"
                 />
                 <v-text-field
                   v-model="ultimaMensagemRecebida"
@@ -225,6 +284,7 @@ export default {
                 />
               </v-form>
             </v-layout>
+
             <div class="chatContainer">
               <div class="chat">
                 <div
@@ -233,18 +293,20 @@ export default {
                   :key="index"
                 >
                   <h4
-                    :class="[' font-weight-light', 'message', mensagem.userId !== userId && 'friendMessage']"
-                  >{{mensagem.mensagem}}</h4>
+                    :class="['font-weight-light', 'message', mensagem.userId !== userId && 'friendMessage']"
+                  >{{mensagem.conteudo}}</h4>
                 </div>
               </div>
+
               <v-text-field
                 @keyup.enter="sendMessage"
-                v-model="mensagem"
+                v-model="mensagemParaEnviar"
                 class="title"
                 label="Mensagem"
-                placeholder="Mensagem"
+                placeholder="Digite sua mensagem"
               />
             </div>
+
           </div>
         </v-container>
       </v-card>
