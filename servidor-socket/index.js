@@ -9,11 +9,15 @@ app.get('/', function (req, res) {
 
 io.on('connection', (socket) => {
     socket.on('entrouNaSala', (data) => {
-        console.log(data)
-        io.emit('usuarioConectado', data)
+        const newData = {
+            ...data,
+            key: 'chave'
+        };
+        console.log(newData);
+        io.emit('usuarioConectado', newData);
     })
     socket.on('enviarMensagem', (data) => {
-        console.log(data)
+        console.log(data);
         io.emit('mensagemChegou', data);
     });
 });

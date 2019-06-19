@@ -7,7 +7,12 @@ export default {
   name: "App",
   components: {},
   sockets: {
-    connect: function() {},
+    connect: function() {
+      this.$socket.emit('entrouNaSala');
+    },
+    usuarioConectado: function(data) {
+      this.key = data.key;
+    },
     mensagemChegou: function(data) {
       // Ignora mensagens próprias
       if (data.userId !== this.userId) {
@@ -52,13 +57,17 @@ export default {
       this.mensagemParaEnviar = null;
     },
 
-    encrypt(str) {
-      return str
+    encrypt: function(str) {
+      const chave = this.key;
+      let msgCriptografada = '';
+      msgCriptografada = str.split("").map((character, index) => {
+          return String.fromCharCode(character.charCodeAt(0) ^ chave[index%chave.length].charCodeAt(0));
+      })
+      return msgCriptografada.join("")
     },
     decrypt(encryptedStr) {
-      return encryptedStr
+      return this.encrypt(encryptedStr);
     },
-
     stringParaBinario(str) {
       if (str === null) {
         return null;
@@ -174,6 +183,8 @@ export default {
     return {
       userId: uuid.v1(),
 
+      key: null,
+
       // Ultima mensagem que o usuário enviou (raw text) e que recebeu (codificado)
       ultimaMensagemEnviada: null,
       ultimaMensagemRecebidaCodificada: null,
@@ -185,10 +196,12 @@ export default {
         chart: {
           height: 200,
           zoom: {
-            enabled: false
+            type: 'x',
+            enabled: true,
           }
         },
         xaxis: {
+          type: 'numeric',
           labels: {
             show: false
           }
