@@ -43,11 +43,13 @@ export default {
         userId: this.userId,
         conteudo: this.mensagemParaEnviar,
       });
-      this.mensagemParaEnviar = null;
 
       // Atualiza as saídas relativas a "Ultima mensagem enviada"
       // (ver métodos em computed)
       this.ultimaMensagemEnviada = this.mensagemParaEnviar;
+
+      // Limpa a textbox
+      this.mensagemParaEnviar = null;
     },
 
     encrypt(str) {
