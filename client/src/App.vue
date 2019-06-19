@@ -57,28 +57,31 @@ export default {
       this.mensagemParaEnviar = null;
     },
 
+    // Cifra de Vernam
     encrypt: function(str) {
       const chave = this.key;
-      let msgCriptografada = '';
-      msgCriptografada = str.split("").map((character, index) => {
-          return String.fromCharCode(character.charCodeAt(0) ^ chave[index%chave.length].charCodeAt(0));
-      })
-      return msgCriptografada.join("")
+      
+      let strCriptografada = str.split("").map((char, index) => {
+          return String.fromCharCode(char.charCodeAt() ^ chave.charCodeAt(index % chave.length));
+      }).join("")
+
+      return strCriptografada
     },
-    decrypt(encryptedStr) {
-      return this.encrypt(encryptedStr);
+    decrypt(strCriptografada) {
+      return this.encrypt(strCriptografada);
     },
+
     stringParaBinario(str) {
       if (str === null) {
         return null;
       }
 
       let binStr = str.split("").map(char => {
-          let asciiBinCode = char.charCodeAt().toString(2);
+        let asciiBinCode = char.charCodeAt().toString(2);
 
-          // Padding para cada char ficar com 8 bits
-          return "0".repeat(8 - asciiBinCode.length) + asciiBinCode;
-        }).join('')
+        // Padding para cada char ficar com 8 bits
+        return "0".repeat(8 - asciiBinCode.length) + asciiBinCode;
+      }).join('')
 
       return binStr;
     },
@@ -98,7 +101,7 @@ export default {
       }
 
       // Converte a string binária em um sinal NRZ
-      // Ex: "010" --> (-1, 1, -1)
+      // Ex: "010" --> [-1, 1, -1]
       const nrzSignal = binStr.split("").map(value => {
         return value === "1" ? 1 : -1;
       });
@@ -111,7 +114,7 @@ export default {
       }
 
       // Converte o sinal NRZ em uma string binária
-      // Ex: (-1, 1, -1) --> "010"
+      // Ex: [-1, 1, -1] --> "010"
       let binStr = nrzSignal.map(value => {
         return value === 1 ? "1" : "0"
       }).join('');
