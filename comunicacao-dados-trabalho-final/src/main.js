@@ -14,5 +14,5 @@ Vue.config.productionTip = false
 Vue.component('apexchart', VueApexCharts)
 
 new Vue({
-  render: h => h(App),
+  render: h => h(App)
 }).$mount('#app')

@@ -17,9 +17,9 @@ export default {
       // Ignora mensagens próprias
       if (data.userId !== this.userId) {
         // Melhor deixar os passos explícitos, caso o professor queira ver o código
-        var binStr = this.NRZParaBinario(data.signal)
-        var encryptedStr = this.binarioParaString(binStr)
-        var decryptedStr = this.decrypt(encryptedStr)
+        let binStr = this.NRZParaBinario(data.signal)
+        let encryptedStr = this.binarioParaString(binStr)
+        let decryptedStr = this.decrypt(encryptedStr)
 
         this.mensagensChat.push({
           userId: data.userId,
@@ -35,9 +35,9 @@ export default {
   methods: {
     sendMessage: function() {
       // Melhor deixar os passos explícitos, caso o professor queira ver o código
-      var encryptedStr = this.encrypt(this.mensagemParaEnviar)
-      var binStr = this.stringParaBinario(encryptedStr)
-      var nrzSignal = this.binarioParaNRZ(binStr)
+      let encryptedStr = this.encrypt(this.mensagemParaEnviar)
+      let binStr = this.stringParaBinario(encryptedStr)
+      let nrzSignal = this.binarioParaNRZ(binStr)
 
       this.$socket.emit("enviarMensagem", {
         userId: this.userId,
@@ -73,32 +73,23 @@ export default {
         return null;
       }
 
-      // TODO - Verificar se estão convertendo para binário corretamente
+      let binStr = str.split("").map(char => {
+          let asciiBinCode = char.charCodeAt().toString(2);
 
-      //porque toda essa lógica pra converter? não tem um jeito mais fácil?
-      var stringNumeros = str
-        .split("")
-        .map(function(char) {
-          if (/^\d+$/.test(char)) {
-            return char;
-          }
-          return char.charCodeAt(0);
-        })
-        .reduce(function(current, previous) {
-          return previous.toString() + current.toString();
-        })
-        .toString();
+          // Padding para cada char ficar com 8 bits
+          return "0".repeat(8 - asciiBinCode.length) + asciiBinCode;
+        }).join('')
 
-      function zeroPad(num) {
-        return "00000000".slice(String(num).length) + num;
-      }
-
-      return stringNumeros.replace(/[\s\S]/g, function(str) {
-        return zeroPad(str.charCodeAt().toString(2));
-      });
+      return binStr;
     },
     binarioParaString(binStr) {
-      return binStr
+      let bytes = binStr.match(/.{8}/g)
+     
+      let str = bytes.map(byte => {
+        return String.fromCharCode(parseInt(byte, 2))
+      }).join('');
+
+      return str;
     },
 
     binarioParaNRZ(binStr) {
@@ -106,25 +97,26 @@ export default {
         return null
       }
 
-      // TODO: converter binStr para o sinal NRZ
+      // Converte a string binária em um sinal NRZ
       // Ex: "010" --> (-1, 1, -1)
       const nrzSignal = binStr.split("").map(value => {
-        return value;
+        return value === "1" ? 1 : -1;
       });
 
-      return [{
-        data: nrzSignal
-      }];
+      return nrzSignal;
     },
     NRZParaBinario(nrzSignal) {
       if (nrzSignal === null) {
         return null
       }
 
-      // TODO: converter o sinal NRZ na string binária
+      // Converte o sinal NRZ em uma string binária
       // Ex: (-1, 1, -1) --> "010"
+      let binStr = nrzSignal.map(value => {
+        return value === 1 ? "1" : "0"
+      }).join('');
 
-      return "000000";
+      return binStr;
     },
 
     binarioParaRZ(binStr) {
@@ -138,11 +130,7 @@ export default {
         return value;
       });
 
-      return [
-        {
-          data: rzSignal
-        }
-      ];
+      return rzSignal;
     },
     RZParaBinario(rzSignal) {
       if (rzSignal === null) {
@@ -265,7 +253,7 @@ export default {
                   type="line"
                   height="350"
                   :options="chartOptions"
-                  :series="ultimaMensagemEnviadaCodificada"
+                  :series="[{ data: ultimaMensagemEnviadaCodificada }]"
                 />
               </v-form>
 
@@ -275,7 +263,7 @@ export default {
                   type="line"
                   height="350"
                   :options="chartOptions"
-                  :series="ultimaMensagemRecebidaCodificada"
+                  :series="[{ data: ultimaMensagemRecebidaCodificada }]"
                 />
                 <v-text-field
                   v-model="ultimaMensagemRecebidaBinaria"
