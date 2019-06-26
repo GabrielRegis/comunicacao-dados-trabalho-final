@@ -237,20 +237,21 @@ export default {
                   class="title"
                   label="Mensagem"
                   placeholder="Mensagem"
+                  readonly
                 />
                 <v-text-field
                   v-model="ultimaMensagemEnviadaCriptografada"
                   class="title"
                   label="Criptografada"
-                  readonly
                   placeholder="Mensagem criptografada"
+                  readonly
                 />
                 <v-text-field
                   v-model="ultimaMensagemEnviadaBinaria"
                   class="title"
                   label="Binário"
-                  readonly
                   placeholder="Mensagem em binário"
+                  readonly
                 />
                 <apexchart
                   type="line"
@@ -272,21 +273,22 @@ export default {
                   v-model="ultimaMensagemRecebidaBinaria"
                   class="title"
                   label="Binário"
-                  readonly
                   placeholder="Mensagem em binário"
+                  readonly
                 />
                 <v-text-field
                   v-model="ultimaMensagemRecebidaCriptografada"
                   class="title"
                   label="Criptografada"
-                  readonly
                   placeholder="Mensagem criptografada"
+                  readonly
                 />
                 <v-text-field
                   v-model="ultimaMensagemRecebida"
                   class="title"
                   label="Mensagem"
                   placeholder="Mensagem"
+                  readonly
                 />
               </v-form>
             </v-layout>
