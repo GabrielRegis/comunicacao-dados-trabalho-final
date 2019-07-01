@@ -7,6 +7,7 @@ import './plugins/vuetify';
 export const SocketInstance = new VueSocketIO({
   debug: true,
   connection: 'http://localhost:3000'
+  // connection: 'http://192.168.15.9:3000'
 })
 
 Vue.use(SocketInstance)

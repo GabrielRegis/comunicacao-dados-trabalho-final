@@ -17,9 +17,9 @@ export default {
       // Ignora mensagens próprias
       if (data.userId !== this.userId) {
         // Melhor deixar os passos explícitos, caso o professor queira ver o código
-        let binStr = this.NRZParaBinario(data.signal)
-        let encryptedStr = this.binarioParaString(binStr)
-        let decryptedStr = this.decrypt(encryptedStr)
+        let binStr = this.NRZParaBinario(data.signal);
+        let encryptedStr = this.binarioParaString(binStr);
+        let decryptedStr = this.decrypt(encryptedStr);
 
         this.mensagensChat.push({
           userId: data.userId,
@@ -35,9 +35,9 @@ export default {
   methods: {
     sendMessage: function() {
       // Melhor deixar os passos explícitos, caso o professor queira ver o código
-      let encryptedStr = this.encrypt(this.mensagemParaEnviar)
-      let binStr = this.stringParaBinario(encryptedStr)
-      let nrzSignal = this.binarioParaNRZ(binStr)
+      let encryptedStr = this.encrypt(this.mensagemParaEnviar);
+      let binStr = this.stringParaBinario(encryptedStr);
+      let nrzSignal = this.binarioParaNRZ(binStr);
 
       this.$socket.emit("enviarMensagem", {
         userId: this.userId,
@@ -63,9 +63,9 @@ export default {
       
       let strCriptografada = str.split("").map((char, index) => {
           return String.fromCharCode(char.charCodeAt() ^ chave.charCodeAt(index % chave.length));
-      }).join("")
+      }).join("");
 
-      return strCriptografada
+      return strCriptografada;
     },
     decrypt(strCriptografada) {
       return this.encrypt(strCriptografada);
@@ -81,15 +81,15 @@ export default {
 
         // Padding para cada char ficar com 8 bits
         return "0".repeat(8 - asciiBinCode.length) + asciiBinCode;
-      }).join('')
+      }).join('');
 
       return binStr;
     },
     binarioParaString(binStr) {
-      let bytes = binStr.match(/.{8}/g)
+      let bytes = binStr.match(/.{8}/g);
      
       let str = bytes.map(byte => {
-        return String.fromCharCode(parseInt(byte, 2))
+        return String.fromCharCode(parseInt(byte, 2));
       }).join('');
 
       return str;
@@ -97,26 +97,26 @@ export default {
 
     binarioParaNRZ(binStr) {
       if (binStr === null) {
-        return null
+        return null;
       }
 
       // Converte a string binária em um sinal NRZ
       // Ex: "010" --> [-1, 1, -1]
-      const nrzSignal = binStr.split("").map(value => {
-        return value === "1" ? 1 : -1;
+      const nrzSignal = binStr.split("").map(bit => {
+        return bit === "1" ? 1 : -1;
       });
 
       return nrzSignal;
     },
     NRZParaBinario(nrzSignal) {
       if (nrzSignal === null) {
-        return null
+        return null;
       }
 
       // Converte o sinal NRZ em uma string binária
       // Ex: [-1, 1, -1] --> "010"
       let binStr = nrzSignal.map(value => {
-        return value === 1 ? "1" : "0"
+        return value === 1 ? "1" : "0";
       }).join('');
 
       return binStr;
@@ -124,26 +124,37 @@ export default {
 
     binarioParaRZ(binStr) {
       if (binStr === null) {
-        return null
+        return null;
       }
 
-      // TODO: converter binStr para o sinal RZ
-      // Ex: "010" --> (-1, 0, 1, 0, -1)
-      const rzSignal = binStr.split("").map(value => {
-        return value;
-      });
+      // Converte a string binária em um sinal RZ
+      // Ex: "010" --> [-1, 0, 1, 0, -1, 0]
+      let rzSignal = [];
+      for(let bit of binStr) {
+        if (bit === "1") {
+          rzSignal.concat([1, 0]);
+        } else {
+          rzSignal.concat([-1, 0]);
+        }
+      }
 
       return rzSignal;
     },
     RZParaBinario(rzSignal) {
       if (rzSignal === null) {
-        return null
+        return null;
       }
 
-      // TODO: converter o sinal RZ na string binária
-      // Ex: (-1, 0, 1, 0, -1) --> "010"
+      // Converte o sinal RZ em uma string binária
+      // Ex: [-1, 0, 1, 0, -1, 0] --> "010"
+      let binStr = [];
+      for(let i=0; i < rzSignal.length - 1; i+=2) {
+        let bit = (rzSignal[i] === 1 && rzSignal[i+1] === 0) ? "1" : "0";
+        binStr.push(bit);
+      }
+      binStr = binStr.join('');
 
-      return "000000";
+      return binStr;
     },
   },
 
