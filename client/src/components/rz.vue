@@ -22,8 +22,8 @@ export default {
       }
     },
     mensagemChegou: function(data) {
-      // Ignora mensagens próprias
-      if (data.userId !== this.userId) {
+      // Ignora mensagens próprias e que não forem RZ
+      if (data.userId !== this.userId && data.codeType === 'RZ') {
         // Melhor deixar os passos explícitos, caso o professor queira ver o código
         let binStr = RZToBinary(data.signal);
         let encryptedStr = binaryToString(binStr);
@@ -49,6 +49,7 @@ export default {
 
       this.$socket.emit("enviarMensagem", {
         userId: this.userId,
+        codeType: 'RZ',
         signal: rzSignal
       });
 

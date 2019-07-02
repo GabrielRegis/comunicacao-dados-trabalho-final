@@ -1,5 +1,7 @@
 
+// Descomentar as linhas para desabilitar a criptografia
 function encrypt(str, key) {
+	// return str;
   if (str === null) {
     return null;
   }
@@ -12,6 +14,7 @@ function encrypt(str, key) {
 }
 
 function decrypt(encryptedStr, key) {
+	// return encryptedStr;
   return encrypt(encryptedStr, key);
 }
 
