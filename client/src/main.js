@@ -3,6 +3,7 @@ import VueApexCharts from "vue-apexcharts";
 import VueSocketIO from 'vue-socket.io';
 import App from './App.vue';
 import './plugins/vuetify';
+import router from './router';
 
 export const SocketInstance = new VueSocketIO({
   debug: true,
@@ -15,5 +16,6 @@ Vue.config.productionTip = false
 Vue.component('apexchart', VueApexCharts)
 
 new Vue({
+  router,
   render: h => h(App)
 }).$mount('#app')
