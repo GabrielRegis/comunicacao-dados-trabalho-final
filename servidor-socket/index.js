@@ -15,7 +15,7 @@ io.on('connection', (socket) => {
         };
         console.log(newData);
         io.emit('usuarioConectado', newData);
-    })
+    });
     socket.on('enviarMensagem', (data) => {
         console.log(data);
         io.emit('mensagemChegou', data);

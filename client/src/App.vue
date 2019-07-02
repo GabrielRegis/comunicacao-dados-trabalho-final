@@ -1,4 +1,3 @@
-
 <template>
   <v-layout justify-center>
     <v-flex xs12>
@@ -15,7 +14,6 @@
       </v-toolbar>
 
       <router-view/>
-
     </v-flex>
   </v-layout>
 </template>
