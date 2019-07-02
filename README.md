@@ -47,5 +47,5 @@ Ao enviar ou receber uma mensagem, as informações desta mensagem (texto aberto
 - [x] Conversão de string para binário e vice versa
 - [x] Algoritmo de criptografia - Vernam
 - [x] Codificação de linha com NRZ
-- [ ] Codificação de linha com RZ
-- [ ] Seleção de algoritmo de codificação de linha (RZ ou NRZ) no cliente
+- [x] Codificação de linha com RZ
+- [x] Seleção de algoritmo de codificação de linha (RZ ou NRZ) no cliente
