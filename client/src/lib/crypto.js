@@ -12,7 +12,7 @@ function encrypt(str, key) {
 }
 
 function decrypt(encryptedStr, key) {
-  return this.encrypt(encryptedStr, key);
+  return encrypt(encryptedStr, key);
 }
 
 export { encrypt, decrypt }
